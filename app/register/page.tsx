@@ -37,7 +37,7 @@ export default function RegisterPage() {
                         Name
                     </label>
                     <input
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none"
                         type="text"
                         id="name"
                         value={name}
@@ -50,7 +50,7 @@ export default function RegisterPage() {
                         Email
                     </label>
                     <input
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none"
                         type="email"
                         id="email"
                         value={email}
@@ -63,7 +63,7 @@ export default function RegisterPage() {
                         Password
                     </label>
                     <input
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none"
                         type="password"
                         id="password"
                         value={password}
