@@ -25,7 +25,6 @@
     "forwardPorts": [
         3000
     ],
-    "postCreateCommand": "bun install && bunx prisma generate && bunx prisma migrate dev --name init",
-    "postStartCommand": "bun run dev",
+    "postCreateCommand": "bun install && bunx prisma generate && bunx prisma migrate deploy",
     "remoteUser": "node"
 }
