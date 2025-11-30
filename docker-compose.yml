@@ -3,11 +3,25 @@ services:
     container_name: nextjs-web-app
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       args:
         DATABASE_URL: ${DATABASE_URL}
     ports:
       - "3000:3000"
     env_file:
       - .env
+    volumes:
+      # ソースコードをマウント（ホットリロード用）
+      - ./app:/app/app
+      - ./lib:/app/lib
+      - ./prisma:/app/prisma
+      - ./public:/app/public
+      - ./middleware.ts:/app/middleware.ts
+      - ./next.config.mjs:/app/next.config.mjs
+      - ./tailwind.config.ts:/app/tailwind.config.ts
+      - ./postcss.config.js:/app/postcss.config.js
+      - ./tsconfig.json:/app/tsconfig.json
+      # node_modulesと.nextは除外（コンテナ内のものを使用）
+      - /app/node_modules
+      - /app/.next
     restart: always

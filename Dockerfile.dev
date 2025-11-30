@@ -1,0 +1,27 @@
+FROM node:20-alpine
+
+# 必要なパッケージをインストール
+RUN apk add --no-cache libc6-compat openssl
+
+WORKDIR /app
+
+# パッケージファイルをコピー
+COPY package.json bun.lock* ./
+
+# 依存関係をインストール
+RUN npm install -g bun && bun install
+
+# ソースコードをコピー
+COPY . .
+
+# Prisma Clientを生成
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+RUN bunx prisma generate
+
+# 開発サーバーを起動
+EXPOSE 3000
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+CMD ["bun", "run", "dev"]

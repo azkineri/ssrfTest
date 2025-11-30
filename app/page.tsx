@@ -134,7 +134,7 @@ export default function Home() {
                 Name
               </label>
               <input
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none text-black"
                 type="text"
                 id="name"
                 value={name}
@@ -149,7 +149,7 @@ export default function Home() {
               Email
             </label>
             <input
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none text-black"
               type="email"
               id="email"
               value={email}
@@ -163,7 +163,7 @@ export default function Home() {
               Password
             </label>
             <input
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none text-black"
               type="password"
               id="password"
               value={password}
@@ -221,7 +221,7 @@ export default function Home() {
             value={newTodo}
             onChange={(e) => setNewTodo(e.target.value)}
             placeholder="Add a new todo..."
-            className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+            className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none text-black"
             onKeyDown={(e) => e.key === "Enter" && addTodo()}
           />
           <button
