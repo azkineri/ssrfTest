@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Next.js 14.1.1 SSRF Vulnerability Demo (CVE-2025-57822)
 
-## Getting Started
+ToDoリスト管理アプリケーションを使用して、Next.js 14.1.1のSSRF脆弱性を再現するためのデモプロジェクト。
 
-First, run the development server:
+## 概要
+
+このプロジェクトは、BetterAuthを使用した認証機能を持つToDoアプリケーションで、Next.js 14.1.1のSSRF脆弱性（CVE-2025-57822）を実装しています。
+
+**⚠️ 警告**: このプロジェクトは教育目的で意図的に脆弱性を含んでいます。本番環境では使用しないでください。
+
+## 機能
+
+- TOPページから直接ログイン/登録
+- ToDoの作成、編集、削除
+- BetterAuthによる認証
+- Prisma + SQLite
+- **脆弱なMiddleware**: CVE-2025-57822の再現
+
+## 開発環境のセットアップ
+
+### Dev Container（推奨）
+
+1. VS Codeで`Dev Containers`拡張機能をインストール
+2. このフォルダを開く
+3. `F1` → "Dev Containers: Reopen in Container"を選択
+4. 自動的に環境が構築され、開発サーバーが起動します
+
+### ローカル開発
+
+必要なもの:
+- Node.js 20+
+- Bun
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 依存関係のインストール
+bun install
+
+# Prismaクライアントの生成とマイグレーション
+bunx prisma generate
+bunx prisma migrate dev --name init
+
+# 開発サーバーの起動
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Docker（本番ビルド）
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# ビルドと起動
+docker compose up -d
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+# 停止
+docker compose down
+```
 
-## Learn More
+## 脆弱性の検証
 
-To learn more about Next.js, take a look at the following resources:
+詳細な検証手順は[walkthrough.md](/.gemini/antigravity/brain/fb79dc41-65d5-42f5-a4d5-96a334da497c/walkthrough.md)を参照してください。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 基本的な検証
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+1. http://localhost:3000 にアクセスしてアカウントを作成
+2. セッションCookieを取得
+3. 以下のコマンドでSSRFを試行:
 
-## Deploy on Vercel
+```bash
+curl -H "Location: http://169.254.169.254/latest/meta-data/" \
+     -H "Cookie: better-auth.session_token=<your-token>" \
+     http://localhost:3000/
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## プロジェクト構成
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- `/app` - Next.js App Router
+- `/lib` - BetterAuth設定
+- `/prisma` - データベーススキーマ
+- `middleware.ts` - **脆弱なMiddleware実装**
+- `.devcontainer` - Dev Container設定
+
+## ライセンス
+
+このプロジェクトは教育目的のみです。
