@@ -19,9 +19,14 @@ ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL}
 RUN bunx prisma generate
 
+# entrypointスクリプトをコピーして実行権限を付与
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # 開発サーバーを起動
 EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["bun", "run", "dev"]

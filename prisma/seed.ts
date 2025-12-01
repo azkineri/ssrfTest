@@ -11,6 +11,14 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
     console.log('Starting seed...');
 
+    // 既存のデータをクリア
+    console.log('Cleaning up existing data...');
+    await prisma.todo.deleteMany({});
+    await prisma.account.deleteMany({});
+    await prisma.session.deleteMany({});
+    await prisma.user.deleteMany({});
+    console.log('Cleanup completed.');
+
     // パスワードをハッシュ化
     const hashedPassword = await hash('password123', 10);
 
@@ -95,34 +103,69 @@ async function main() {
 
     console.log(`Created ${users.length} users`);
 
-    // 各ユーザーにタスクを作成
-    const todoTemplates = [
-        { title: 'プロジェクトの企画書を作成', completed: true },
-        { title: 'チームミーティングの準備', completed: true },
-        { title: 'クライアントへのプレゼン資料作成', completed: false },
-        { title: 'コードレビューを実施', completed: false },
-        { title: '週次レポートを提出', completed: false },
-        { title: 'データベースのバックアップ', completed: true },
-        { title: '新機能の設計書を書く', completed: false },
-        { title: 'バグ修正 #1234', completed: true },
-        { title: 'ドキュメントの更新', completed: false },
-        { title: 'テストケースの追加', completed: false },
-        { title: 'パフォーマンス改善の調査', completed: false },
-        { title: 'セキュリティ監査の実施', completed: true },
-        { title: 'ユーザーフィードバックの分析', completed: false },
-        { title: 'CI/CDパイプラインの改善', completed: false },
-        { title: 'APIドキュメントの作成', completed: true },
-    ];
+    // 各ユーザーごとに異なるタスクを作成
+    const userTodos = {
+        'alice@example.com': [
+            { title: 'プロジェクトの企画書を作成', completed: true },
+            { title: 'チームミーティングの準備', completed: true },
+            { title: 'クライアントへのプレゼン資料作成', completed: false },
+            { title: '予算計画の見直し', completed: false },
+            { title: '四半期レポートの作成', completed: true },
+            { title: '新規プロジェクトのキックオフ', completed: false },
+            { title: 'ステークホルダーとの打ち合わせ', completed: false },
+        ],
+        'bob@example.com': [
+            { title: 'コードレビューを実施', completed: true },
+            { title: 'バグ修正 #1234', completed: true },
+            { title: 'ユニットテストの追加', completed: false },
+            { title: 'リファクタリング: 認証モジュール', completed: false },
+            { title: 'パフォーマンス改善の調査', completed: false },
+            { title: 'APIエンドポイントの実装', completed: true },
+            { title: 'コードカバレッジの向上', completed: false },
+            { title: '技術的負債の解消', completed: false },
+        ],
+        'charlie@example.com': [
+            { title: 'データベースのバックアップ', completed: true },
+            { title: 'セキュリティ監査の実施', completed: true },
+            { title: 'サーバーのメンテナンス', completed: false },
+            { title: 'ログ監視システムの構築', completed: false },
+            { title: 'CI/CDパイプラインの改善', completed: false },
+            { title: 'インフラコストの最適化', completed: true },
+            { title: 'バックアップ戦略の見直し', completed: false },
+        ],
+        'diana@example.com': [
+            { title: 'UIデザインのモックアップ作成', completed: true },
+            { title: 'ユーザーフィードバックの分析', completed: true },
+            { title: 'ユーザビリティテストの実施', completed: false },
+            { title: 'デザインシステムの更新', completed: false },
+            { title: 'アクセシビリティの改善', completed: false },
+            { title: 'プロトタイプの作成', completed: true },
+            { title: 'カラーパレットの見直し', completed: false },
+            { title: 'レスポンシブデザインの調整', completed: false },
+        ],
+        'eve@example.com': [
+            { title: 'APIドキュメントの作成', completed: true },
+            { title: 'ドキュメントの更新', completed: true },
+            { title: 'ユーザーガイドの執筆', completed: false },
+            { title: 'テストケースの追加', completed: false },
+            { title: '新機能の設計書を書く', completed: false },
+            { title: 'リリースノートの作成', completed: true },
+            { title: 'オンボーディング資料の更新', completed: false },
+            { title: '週次レポートを提出', completed: false },
+        ],
+    };
 
     let totalTodos = 0;
 
     for (const user of users) {
-        // 各ユーザーにランダムに5-10個のタスクを割り当て
-        const numTodos = Math.floor(Math.random() * 6) + 5; // 5-10個
-        const shuffled = [...todoTemplates].sort(() => Math.random() - 0.5);
-        const selectedTodos = shuffled.slice(0, numTodos);
+        const todos = userTodos[user.email as keyof typeof userTodos];
 
-        for (const template of selectedTodos) {
+        if (!todos) {
+            console.warn(`No todos defined for ${user.email}`);
+            continue;
+        }
+
+        for (const template of todos) {
             await prisma.todo.create({
                 data: {
                     title: template.title,
