@@ -103,6 +103,28 @@ curl -H "x-middleware-subrequest: 1" \
    - 認証・認可の完全バイパス
    - 管理者権限の不正取得
 
+---
+
+## AWS Credentials Vulnerability Demo
+
+このリポジトリには、`aws-actions/configure-aws-credentials` v1の脆弱性（CVE-2023-33966）のデモも含まれています。この脆弱性では、AWS認証情報がGitHub Actionsワークフローの後続ジョブに漏洩します。
+
+### クイックスタート
+
+1. GitHubの **Actions** タブに移動
+2. **"AWS Credentials Vulnerability Demo (v1)"** を選択
+3. **"Run workflow"** をクリック
+4. ジョブログを確認して脆弱性の動作を確認
+
+**重要なポイント:**
+- ダミーのAWS認証情報を使用（実際には使用不可）
+- v1での認証情報漏洩を実証
+- v4での修正を示す
+
+詳細は [docs/aws-credentials-vulnerability.md](docs/aws-credentials-vulnerability.md) を参照してください。
+
+---
+
 ## ライセンス
 
 このプロジェクトは教育目的のみです。
