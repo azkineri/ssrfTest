@@ -3,7 +3,7 @@ services:
     container_name: nextjs-web-app
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
       args:
         DATABASE_URL: ${DATABASE_URL}
     ports:
