@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaLibSql } from '@prisma/adapter-libsql';
-import { hash } from 'bcryptjs';
+import { hashPassword } from 'better-auth/crypto';
 
 const adapter = new PrismaLibSql({
     url: process.env.DATABASE_URL || 'file:./dev.db',
@@ -20,9 +20,9 @@ async function main() {
     console.log('Cleanup completed.');
 
     // パスワードをハッシュ化
-    const hashedPassword = await hash('password123', 10);
-    const adminPassword = await hash('Admin123!', 10);
-    const userPassword = await hash('User123!', 10);
+    const hashedPassword = await hashPassword('password123');
+    const adminPassword = await hashPassword('Admin123!');
+    const userPassword = await hashPassword('User123!');
 
     // CVE検証用のテストアカウントを作成
     console.log('Creating test accounts for CVE verification...');
