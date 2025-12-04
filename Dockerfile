@@ -45,6 +45,18 @@ RUN \
     else echo "Lockfile not found." && exit 1; \
     fi
 
+# Clean existing database and deploy migrations
+RUN rm -f prisma/dev.db prisma/dev.db-journal && \
+    if [ -f bun.lockb ] || [ -f bun.lock ]; then npm install -g bun && bunx prisma migrate deploy; \
+    else npx prisma migrate deploy; \
+    fi
+
+# Run database seed
+RUN \
+    if [ -f bun.lockb ] || [ -f bun.lock ]; then npm install -g bun && bun run seed; \
+    else npx tsx prisma/seed.ts; \
+    fi
+
 # Production image, copy all the files and run next
 FROM base AS runner
 RUN apk add --no-cache openssl
@@ -72,6 +84,13 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+
+# Copy seeded database file (created at /app/dev.db based on DATABASE_URL)
+COPY --from=builder --chown=nextjs:nodejs /app/dev.db ./dev.db
+
+# Copy libsql native binaries
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@libsql ./node_modules/@libsql
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/libsql ./node_modules/libsql
 
 USER nextjs
 
