@@ -92,6 +92,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/dev.db ./dev.db
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@libsql ./node_modules/@libsql
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/libsql ./node_modules/libsql
 
+# Ensure the app directory is writable by the nextjs user for SQLite journal files
+RUN chown nextjs:nodejs /app
+
 USER nextjs
 
 EXPOSE 3000
