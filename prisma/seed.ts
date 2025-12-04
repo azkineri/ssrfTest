@@ -21,8 +21,49 @@ async function main() {
 
     // パスワードをハッシュ化
     const hashedPassword = await hash('password123', 10);
+    const adminPassword = await hash('Admin123!', 10);
+    const userPassword = await hash('User123!', 10);
 
-    // ユーザーを作成
+    // CVE検証用のテストアカウントを作成
+    console.log('Creating test accounts for CVE verification...');
+    const adminUser = await prisma.user.create({
+        data: {
+            email: 'admin@test.local',
+            name: 'Admin User (Test)',
+            emailVerified: true,
+            isAdmin: true,
+            createdAt: new Date('2024-01-01'),
+            accounts: {
+                create: {
+                    accountId: 'admin@test.local',
+                    providerId: 'credential',
+                    password: adminPassword,
+                },
+            },
+        },
+    });
+
+    const regularUser = await prisma.user.create({
+        data: {
+            email: 'user@test.local',
+            name: 'Regular User (Test)',
+            emailVerified: true,
+            isAdmin: false,
+            createdAt: new Date('2024-01-01'),
+            accounts: {
+                create: {
+                    accountId: 'user@test.local',
+                    providerId: 'credential',
+                    password: userPassword,
+                },
+            },
+        },
+    });
+
+    console.log('✅ Test accounts created successfully');
+
+    // サンプルユーザーを作成
+    console.log('Creating sample users...');
     const users = await Promise.all([
         prisma.user.create({
             data: {
@@ -179,10 +220,27 @@ async function main() {
     }
 
     console.log(`Created ${totalTodos} todos`);
-    console.log('Seed completed successfully!');
-    console.log('\n=== Login Credentials ===');
-    console.log('Email: alice@example.com, bob@example.com, charlie@example.com, diana@example.com, eve@example.com');
-    console.log('Password: password123');
+    console.log('\n✅ Seed completed successfully!\n');
+
+    console.log('='.repeat(60));
+    console.log('🔐 CVE VERIFICATION TEST ACCOUNTS');
+    console.log('='.repeat(60));
+    console.log('Admin Account:');
+    console.log('  Email:    admin@test.local');
+    console.log('  Password: Admin123!');
+    console.log('  Role:     Administrator (isAdmin: true)');
+    console.log('');
+    console.log('Regular User Account:');
+    console.log('  Email:    user@test.local');
+    console.log('  Password: User123!');
+    console.log('  Role:     Regular User (isAdmin: false)');
+    console.log('='.repeat(60));
+    console.log('');
+    console.log('Sample User Credentials:');
+    console.log('  Emails:   alice@example.com, bob@example.com, charlie@example.com,');
+    console.log('            diana@example.com, eve@example.com');
+    console.log('  Password: password123');
+    console.log('='.repeat(60));
 }
 
 main()
