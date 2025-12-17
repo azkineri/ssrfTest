@@ -1,10 +1,10 @@
 import { betterFetch } from "@better-fetch/fetch";
 import type { Session } from "better-auth/types";
 import { NextResponse, type NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
 
 export default async function authMiddleware(request: NextRequest) {
     // CVE-2025-29927: Next.js blindly trusts the x-middleware-subrequest header
+    console.log("Middleware v2 loaded - Checking for x-middleware-subrequest");
     // If this header is present, Next.js assumes it's an internal request and may skip middleware
     // An attacker can spoof this header to bypass authentication and authorization checks
     const isMiddlewareSubrequest = request.headers.get("x-middleware-subrequest");
@@ -33,14 +33,14 @@ export default async function authMiddleware(request: NextRequest) {
     // Additional check for admin-only routes
     if (request.nextUrl.pathname.startsWith("/admin")) {
         // BetterAuth session structure includes user object
-        const userId = (session as any).user?.id || session.userId;
+        const isAdmin = (session as any).user?.isAdmin;
+        console.log("Middleware Admin Check:", {
+            path: request.nextUrl.pathname,
+            user: (session as any).user,
+            isAdmin
+        });
 
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { isAdmin: true },
-        }) as { isAdmin: boolean } | null;
-
-        if (!user?.isAdmin) {
+        if (!isAdmin) {
             // Non-admin users should be blocked from accessing /admin
             // However, CVE-2025-29927 allows bypassing this check with x-middleware-subrequest header
             return NextResponse.redirect(new URL("/", request.url));

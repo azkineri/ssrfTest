@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 
 interface Todo {
@@ -92,7 +92,7 @@ export default function Home() {
       onSuccess: () => {
         fetchTodos();
       },
-      onError: (ctx) => {
+      onError: (ctx: { error: { message: string } }) => {
         setAuthError(ctx.error.message);
       },
     });
@@ -108,7 +108,7 @@ export default function Home() {
       onSuccess: () => {
         fetchTodos();
       },
-      onError: (ctx) => {
+      onError: (ctx: { error: { message: string } }) => {
         setAuthError(ctx.error.message);
       },
     });
@@ -138,7 +138,7 @@ export default function Home() {
                 type="text"
                 id="name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                 placeholder="Enter your name"
               />
             </div>
@@ -153,7 +153,7 @@ export default function Home() {
               type="email"
               id="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               placeholder="Enter your email"
             />
           </div>
@@ -167,9 +167,9 @@ export default function Home() {
               type="password"
               id="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
               placeholder="Enter your password"
-              onKeyDown={(e) => e.key === "Enter" && (isLogin ? handleLogin() : handleRegister())}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && (isLogin ? handleLogin() : handleRegister())}
             />
           </div>
 
@@ -206,6 +206,14 @@ export default function Home() {
           <h1 className="text-2xl font-bold text-gray-800">My ToDos</h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600">Welcome, {session.user.name}</span>
+            {(session.user as any).isAdmin && (
+              <a
+                href="/admin"
+                className="rounded-md bg-purple-600 px-3 py-1 text-sm text-white hover:bg-purple-700"
+              >
+                Admin Dashboard
+              </a>
+            )}
             <button
               onClick={handleLogout}
               className="rounded-md bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600"
@@ -219,10 +227,10 @@ export default function Home() {
           <input
             type="text"
             value={newTodo}
-            onChange={(e) => setNewTodo(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTodo(e.target.value)}
             placeholder="Add a new todo..."
             className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none text-black"
-            onKeyDown={(e) => e.key === "Enter" && addTodo()}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && addTodo()}
           />
           <button
             onClick={addTodo}
